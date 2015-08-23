@@ -105,6 +105,7 @@
 #define LN_RX_PORT  PIND
 #define LN_RX_DDR   DDRD
 #define LN_RX_BIT   PORTD4
+#define LN_USE_TIMER3
 
 // Added support for the Tiny84
 #elif defined (__AVR_ATtiny84__) || defined (__AVR_ATtiny84A__) || defined (__AVR_ATtiny841__)
@@ -125,6 +126,24 @@
 #endif
 
 // From sysdef.h:
+#ifdef LN_USE_TIMER3
+#warning Using timer3
+#define LN_SB_SIGNAL          TIMER3_CAPT_vect
+#define LN_SB_INT_ENABLE_REG  TIMSK3
+#define LN_SB_INT_ENABLE_BIT  ICIE3
+#define LN_SB_INT_STATUS_REG  TIFR3
+#define LN_SB_INT_STATUS_BIT  ICF3
+#define LN_TMR_SIGNAL         TIMER3_COMPA_vect
+#define LN_TMR_INT_ENABLE_REG TIMSK3
+#define LN_TMR_INT_STATUS_REG TIFR3
+#define LN_TMR_INT_ENABLE_BIT OCIE3A
+#define LN_TMR_INT_STATUS_BIT OCF3A
+#define LN_TMR_INP_CAPT_REG   ICR3      // [BA040319] added defines for:
+#define LN_TMR_OUTP_CAPT_REG  OCR3A     // ICR1, OCR1A, TCNT1, TCCR1B
+#define LN_TMR_COUNT_REG      TCNT3     // and replaced their occurence in
+#define LN_TMR_CONTROL_REG    TCCR3B    // the code.
+#define LN_INIT_COMPARATOR() { TCCR3A = 0; TCCR3B = 0x01; }    // no prescaler, normal mode
+#else
 #define LN_SB_SIGNAL          TIMER1_CAPT_vect
 #define LN_SB_INT_ENABLE_REG  TIMSK1
 #define LN_SB_INT_ENABLE_BIT  ICIE1
@@ -140,7 +159,7 @@
 #define LN_TMR_COUNT_REG      TCNT1     // and replaced their occurence in
 #define LN_TMR_CONTROL_REG    TCCR1B    // the code.
 #define LN_INIT_COMPARATOR() { TCCR1A = 0; TCCR1B = 0x01; }    // no prescaler, normal mode
-
+#endif
 // *****************************************************************************
 // *                                                       Arduino --UNKNOWN-- *
 // *****************************************************************************
