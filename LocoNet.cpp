@@ -69,6 +69,7 @@
 #include "utils.h"
 
 #include <avr/eeprom.h>
+#include <util/delay.h>
 
 const char * LoconetStatusStrings[] = {
 	"CD Backoff",
@@ -83,6 +84,9 @@ const char * LoconetStatusStrings[] = {
 LocoNetClass::LocoNetClass()
 {
 }
+
+typedef uint8_t byte;
+typedef uint16_t word;
 
 void LocoNetClass::init(void)
 {
@@ -107,15 +111,16 @@ void LocoNetClass::init(uint8_t txPin)
 
 void LocoNetClass::setTxPin(uint8_t txPin)
 {
-  pinMode(txPin, OUTPUT);
+#pragma todo
+  // pinMode(txPin, OUTPUT);
   
 	// Not figure out which Port bit is the Tx Bit from the Arduino pin number
-  uint8_t bitMask = digitalPinToBitMask(txPin);
+    uint8_t bitMask = 5; //digitalPinToBitMask(txPin);
   uint8_t bitMaskTest = 0x01;
   uint8_t bitNum = 0;
   
-  uint8_t port = digitalPinToPort(txPin);
-  volatile uint8_t *out = portOutputRegister(port);
+    uint8_t port = 0;//digitalPinToPort(txPin);
+    volatile uint8_t *out = &PORTB;//portOutputRegister(port);
   
   while(bitMask != bitMaskTest)
 	bitMaskTest = 1 << ++bitNum;
@@ -1331,8 +1336,11 @@ uint8_t LocoNetCVClass::processLNCVMessage(lnMsg * LnPacket) {
 	switch (LnPacket->sr.command) {
 	case OPC_IMM_PACKET:
 	case OPC_PEER_XFER:
+#ifdef DEBUG_OUTPUT
+
 		Serial.println("Possibly a LNCV message.");
-		// Either of these message types may be a LNCV message
+#endif
+        // Either of these message types may be a LNCV message
 		// Sanity check: Message length, Verify addresses
 		if (LnPacket->ub.mesg_size == 15 && LnPacket->ub.DSTL == LNCV_MODULE_DSTL && LnPacket->ub.DSTH == LNCV_MODULE_DSTH) {
 			// It is a LNCV programming message
@@ -1406,7 +1414,7 @@ uint8_t LocoNetCVClass::processLNCVMessage(lnMsg * LnPacket) {
 								DEBUG(LnPacket->ub.payload.data.lncvValue);
 								DEBUG("\n");
 								makeLNCVresponse(response.ub, LnPacket->ub.SRC, LnPacket->ub.payload.data.deviceClass, 0x00, LnPacket->ub.payload.data.lncvValue, 0x80);
-								delay(10); // for whatever reason, we need to delay, otherwise the message will not be sent.
+								_delay_ms(10); // for whatever reason, we need to delay, otherwise the message will not be sent.
 								#ifdef DEBUG_OUTPUT
 								printPacket((lnMsg*)&response);
 								#endif
