@@ -342,40 +342,14 @@ typedef enum
 class LocoNetSystemVariableClass
 {
   private:
-	uint16_t 	vendorId ;
-	uint16_t 	deviceId ;
-    uint8_t     swVersion ;
+	uint8_t 	mfgId ;
+	uint8_t 	devId ;
+	uint16_t 	productId ;
+  uint8_t   swVersion ;
     
-    uint8_t DeferredProcessingRequired ;
-    uint8_t DeferredSrcAddr ;
+  uint8_t DeferredProcessingRequired ;
+  uint8_t DeferredSrcAddr ;
     
-	/** Read a value from the given EEPROM offset.
-	 *
-	 * There are two special values for the Offset parameter:
-	 *	SV_ADDR_EEPROM_SIZE - Return the size of the EEPROM
-	 *  SV_ADDR_SW_VERSION - Return the value of swVersion
-	 *  3 and on - Return the byte stored in the EEPROM at location (Offset - 2)
-	 *
-	 * Parameters:
-	 *		Offset: The offset into the EEPROM. Despite the value being passed as 2 Bytes, only the lower byte is respected.
-	 *
-	 * Returns:
-	 *		A Byte containing the EEPROM size, the software version or contents of the EEPROM.
-	 *
-	 */
-    uint8_t readSVStorage(uint16_t Offset );
-	
-	/** Write the given value to the given Offset in EEPROM.
-	 *
-	 * TODO: Writes to Offset 0 and 1 will cause data corruption.
-	 *
-	 * Fires notifySVChanged(Offset), if the value actually chaned.
-	 *
-	 * Returns:
-	 *		A Byte containing the new EEPROM value (even if unchanged).
-	 */
-    uint8_t writeSVStorage(uint16_t Offset, uint8_t Value);
-	
 	/** Checks whether the given Offset is a valid value.
 	 *
 	 * Returns:
@@ -410,7 +384,7 @@ class LocoNetSystemVariableClass
     bool CheckAddressRange(uint16_t startAddress, uint8_t Count);
 
   public:
-	void init(uint16_t newVendorId, uint16_t newDeviceId, uint8_t newSwVersion);
+	void init(uint8_t newMfgId, uint8_t newDevId, uint16_t newProductId, uint8_t newSwVersion);
 	
 	/**
 	 * Check whether a message is an SV programming message. If so, the message
@@ -434,6 +408,33 @@ class LocoNetSystemVariableClass
 	 */
 	SV_STATUS processMessage(lnMsg *LnPacket );
 	
+    /** Read a value from the given EEPROM offset.
+     *
+     * There are two special values for the Offset parameter:
+     *	SV_ADDR_EEPROM_SIZE - Return the size of the EEPROM
+     *  SV_ADDR_SW_VERSION - Return the value of swVersion
+     *  3 and on - Return the byte stored in the EEPROM at location (Offset - 2)
+     *
+     * Parameters:
+     *		Offset: The offset into the EEPROM. Despite the value being passed as 2 Bytes, only the lower byte is respected.
+     *
+     * Returns:
+     *		A Byte containing the EEPROM size, the software version or contents of the EEPROM.
+     *
+     */
+    uint8_t readSVStorage(uint16_t Offset );
+    
+    /** Write the given value to the given Offset in EEPROM.
+     *
+     * TODO: Writes to Offset 0 and 1 will cause data corruption.
+     *
+     * Fires notifySVChanged(Offset), if the value actually chaned.
+     *
+     * Returns:
+     *		A Byte containing the new EEPROM value (even if unchanged).
+     */
+    uint8_t writeSVStorage(uint16_t Offset, uint8_t Value);
+    
 	/**
 	 * Attempts to send a reply to an SV programming message.
 	 * This method will repeatedly try to send the message, until it succeeds.
