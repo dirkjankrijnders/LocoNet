@@ -50,6 +50,10 @@ boolean programmingMode;
 void setup() {
 	LocoNet.init(LOCONET_TX_PIN);
 	Serial.begin(115200);
+   while (!Serial) {
+    ; // wait for serial port to connect. Needed for Leonardo only
+  }
+
 	Serial.print("Starting LNCV-test\n");
 	lncv[0] = 1;
 	for (int i(1); i < LNCV_COUNT; ++i) {
