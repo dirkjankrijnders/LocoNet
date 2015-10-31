@@ -31,6 +31,10 @@ void setup()
 
   pinMode(TX_LED, OUTPUT);
   digitalWrite(TX_LED, LOW);
+  
+  while (!Serial) {
+    ; // wait for serial port to connect. Needed for Leonardo only
+  }
 }
 
 void loop()
