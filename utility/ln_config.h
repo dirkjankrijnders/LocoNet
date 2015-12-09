@@ -149,7 +149,11 @@
 #define LN_SB_INT_ENABLE_BIT  ICIE1
 #define LN_SB_INT_STATUS_REG  TIFR1
 #define LN_SB_INT_STATUS_BIT  ICF1
+#if defined (__AVR_ATtiny84__) || defined (__AVR_ATtiny84A__) || defined (__AVR_ATtiny841__)
+#define LN_TMR_SIGNAL         TIM1_COMPA_vect
+#else
 #define LN_TMR_SIGNAL         TIMER1_COMPA_vect
+#endif
 #define LN_TMR_INT_ENABLE_REG TIMSK1
 #define LN_TMR_INT_STATUS_REG TIFR1
 #define LN_TMR_INT_ENABLE_BIT OCIE1A
