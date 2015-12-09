@@ -117,12 +117,13 @@ class LocoNetClass
 {
   private:
     LnBuf   LnBuffer ;
-	void 		setTxPin(uint8_t txPin);
+	void 		setTxPin(uint8_t txPin, uint8_t port = 0);
 
   public:
     LocoNetClass();
     void        init(void);
     void        init(uint8_t txPin);
+    void        init(uint8_t txPin, uint8_t port);
     lnMsg*      receive(void);
     LN_STATUS   send(lnMsg *TxPacket);
     LN_STATUS   send(lnMsg *TxPacket, uint8_t PrioDelay);
