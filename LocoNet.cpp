@@ -121,7 +121,7 @@ void LocoNetClass::init(uint8_t txPin)
   initLocoNetHardware(&LnBuffer);
 }
 
-void LocoNetClass::setTxPin(uint8_t txPin, uint8_t port)
+void LocoNetClass::setTxPin(uint8_t txPin, uint8_t _port)
 {
   
   // Not figure out which Port bit is the Tx Bit from the Arduino pin number
@@ -141,7 +141,7 @@ void LocoNetClass::setTxPin(uint8_t txPin, uint8_t port)
 	bitMaskTest = 1 << ++bitNum;
 
 #else
-  out = &port;
+  out = &_port;
   bitNum = txPin;
   volatile uint8_t* ddr = out ++;
   *ddr |= (uint8_t) (1 << bitNum);
