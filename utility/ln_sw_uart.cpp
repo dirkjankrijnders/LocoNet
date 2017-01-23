@@ -38,8 +38,8 @@
  * 
  *****************************************************************************/
 
-#include <avr/io.h>
-#include <avr/interrupt.h>
+//#include <avr/io.h>
+//#include <avr/interrupt.h>
 #include <string.h>
 #include "ln_config.h"
 #include "LocoNet.h"
@@ -68,6 +68,7 @@ void setTxPortAndPin(volatile uint8_t *newTxPort, uint8_t newTxPin)
   txPort = newTxPort;
   txPin = newTxPin;
 }
+HardwareTimer timer(1);
 
 /**************************************************************************
  *
@@ -81,7 +82,7 @@ void setTxPortAndPin(volatile uint8_t *newTxPort, uint8_t newTxPin)
  *
  **************************************************************************/
 
-ISR(LN_SB_SIGNAL)
+void ISR_LN_SB_SIGNAL()
 {
   // Disable the Input Comparator Interrupt
   cbi( LN_SB_INT_ENABLE_REG, LN_SB_INT_ENABLE_BIT );     
@@ -112,7 +113,7 @@ ISR(LN_SB_SIGNAL)
  * it samples the bit and shifts it into the buffer.
  *
  **************************************************************************/
-ISR(LN_TMR_SIGNAL)     /* signal handler for timer0 overflow */
+void ISR_LN_TMR_SIGNAL()     /* signal handler for timer0 overflow */
 {
   // Advance the Compare Target by a bit period
   lnCompareTarget += LN_TIMER_RX_RELOAD_PERIOD;
@@ -257,12 +258,18 @@ void initLocoNetHardware( LnBuf *RxBuffer )
   TCCR1B |= (1<<ICNC1) ;    		// Enable Noise Canceler 
 #endif
   lnState = LN_ST_IDLE ;
-  //Clear StartBit Interrupt flag
-  sbi( LN_SB_INT_STATUS_REG, LN_SB_INT_STATUS_BIT );
-  //Enable StartBit Interrupt
-  sbi( LN_SB_INT_ENABLE_REG, LN_SB_INT_ENABLE_BIT );
-  // Set Timer Clock Source 
-  LN_TMR_CONTROL_REG = (LN_TMR_CONTROL_REG & 0xF8) | LN_TMR_PRESCALER;
+  // Pause the timer while we're configuring it
+  timer.pause();
+
+  // Set up period
+  timer.setPeriod(60);
+  // Set up an interrupt on channel 1
+  timer.setChannel1Mode(TIMER_OUTPUT_COMPARE);
+  timer.setCompare(TIMER_CH1, 1);  // Interrupt 1 count after each update
+  timer.attachCompare1Interrupt(ISR_LN_TMR_SIGNAL);
+
+  // Refresh the timer's count, prescale, and overflow
+  timer.refresh();
 }
 
 

@@ -41,8 +41,8 @@
 #ifndef _LN_SW_UART_INCLUDED
 #define _LN_SW_UART_INCLUDED
 
-#include <avr/io.h>
-#include <avr/interrupt.h>
+//#include <avr/io.h>
+//#include <avr/interrupt.h>
 #include <string.h>
 
 #ifndef LN_SW_UART_SET_TX_LOW                               // putting a 1 to the pin to switch on NPN transistor
@@ -99,7 +99,7 @@
 // ATTENTION !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 void initLocoNetHardware( LnBuf *RxBuffer );
-void setTxPortAndPin(volatile uint8_t *newTxPort, uint8_t newTxPin);
+void setTxPortAndPin(volatile uint32_t *newTxPort, uint32_t newTxPin);
 LN_STATUS sendLocoNetPacketTry(lnMsg *TxData, unsigned char ucPrioDelay);
 
 #endif

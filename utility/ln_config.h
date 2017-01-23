@@ -40,7 +40,15 @@
  *
  ****************************************************************************
  */
+#define STM32 1
+#ifdef STM32
+#undef  LN_SW_UART_TX_NON_INVERTED  // Normal is to be inverted...
+#define LN_BIT_PERIOD               (F_CPU / 16666)
+#define LN_TMR_PRESCALER              1
+#define LN_TIMER_TX_RELOAD_ADJUST   106 //  14,4 us delay borrowed from FREDI sysdef.h
+#define LN_TX_RETRIES_MAX            25
 
+#else
 // jmp
 // figure out what board we are building for
 // TODO:  Add support for Leo and others...
@@ -174,5 +182,6 @@
 #define LN_TMR_INT_STATUS_REG TIFR
 
 #endif	// board type
+#endif // STM32
 #endif	// include file
 

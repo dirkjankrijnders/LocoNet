@@ -71,9 +71,9 @@
 #include "ln_config.h"
 #include "utils.h"
 
-#include <avr/eeprom.h>
-#include <util/delay.h>
-#include <avr/wdt.h>
+//#include <avr/eeprom.h>
+//#include <util/delay.h>
+//#include <avr/wdt.h>
 
 const char * LoconetStatusStrings[] = {
 	"CD Backoff",
@@ -90,7 +90,7 @@ LocoNetClass::LocoNetClass()
 }
 
 typedef uint8_t byte;
-typedef uint16_t word;
+//typedef uint16_t word;
 
 void LocoNetClass::init(void)
 {
@@ -105,6 +105,14 @@ const char* LocoNetClass::getStatusStr(LN_STATUS Status)
   return "Invalid Status";
 }
 
+/*
+void LocoNetClass::init(uint8_t txPin, uint8_t port)
+{
+  initLnBuf(&LnBuffer) ;
+  setTxPin(txPin, port);
+  initLocoNetHardware(&LnBuffer);
+}
+*/
 
 void LocoNetClass::init(uint8_t txPin)
 {
@@ -118,7 +126,7 @@ void LocoNetClass::setTxPin(uint8_t txPin)
   
   // Not figure out which Port bit is the Tx Bit from the Arduino pin number
 
-  volatile uint8_t *out;
+  volatile uint32_t *out;
   uint8_t bitNum;
 #ifdef ARDUINO
   pinMode(txPin, OUTPUT);
@@ -126,21 +134,40 @@ void LocoNetClass::setTxPin(uint8_t txPin)
   uint8_t bitMaskTest = 0x01;
   bitNum = 0;
   
-  uint8_t  port = digitalPinToPort(txPin);
+  gpio_dev*  port = digitalPinToPort(txPin);
   out = portOutputRegister(port);
 
   while(bitMask != bitMaskTest)
 	bitMaskTest = 1 << ++bitNum;
 
 #else
-  out = &PORTB;
-  bitNum = 5;
-  DDRB |= (1 << PB5);
+  out = &_port;
+  bitNum = txPin;
+  volatile uint8_t* ddr = out ++;
+  *ddr |= (uint8_t) (1 << bitNum);
 #endif
   setTxPortAndPin(out, bitNum);
 }
 
-lnMsg* LocoNetClass::receive()
+// Check to see if any messages is ready to receive()?
+boolean LocoNetClass::available(void)
+{
+  return lnPacketReady(&LnBuffer);
+}
+
+// Check the size in bytes of waiting message
+uint8_t LocoNetClass::length(void)
+{
+  if (lnPacketReady(&LnBuffer))
+  {
+		lnMsg* m = (lnMsg *)&(LnBuffer.Buf[ LnBuffer.ReadIndex ]);
+		return getLnMsgSize(m);
+  } 
+  else
+		return 0;
+}
+
+lnMsg* LocoNetClass::receive(void)
 {
   return recvLnMsg(&LnBuffer);
 }
@@ -518,7 +545,7 @@ LN_STATUS LocoNetClass::reportSensor( uint16_t Address, uint8_t State )
 }
 
 LocoNetClass LocoNet = LocoNetClass();
-
+/*
 // LocoNet Throttle Support
 
 
@@ -1234,9 +1261,9 @@ uint8_t LocoNetSystemVariableClass::readSVStorage(uint16_t Offset )
 {
 	uint8_t retValue;
 	
-  if( Offset == SV_ADDR_EEPROM_SIZE)
-#if (E2END==0x0FF)	/* E2END is defined in processor include */
-								return SV_EE_SZ_256;
+  if( Offset == SV_ADDR_EEPROM_SIZE)*/
+//#if (E2END==0x0FF)	/* E2END is defined in processor include */
+/*								return SV_EE_SZ_256;
 #elif (E2END==0x1FF)
 								return SV_EE_SZ_512;
 #elif (E2END==0x3FF)
@@ -1493,10 +1520,10 @@ SV_STATUS LocoNetSystemVariableClass::doDeferredProcessing( void )
     unData.stDecoded.unSerialNumber.b.hi          = readSVStorage(SV_ADDR_SERIAL_NUMBER_H);
     
     encodePeerData( &msg.px, unData.abPlain );
-
+*/
     /* Note that this operation intentionally uses a "make one attempt to
        send to LocoNet" method here */
-    if( sendLocoNetPacketTry( &msg, LN_BACKOFF_INITIAL + ( unData.stDecoded.unSerialNumber.b.lo % (byte) 10 ) ) != LN_DONE )
+/*    if( sendLocoNetPacketTry( &msg, LN_BACKOFF_INITIAL + ( unData.stDecoded.unSerialNumber.b.lo % (byte) 10 ) ) != LN_DONE )
       return SV_DEFERRED_PROCESSING_NEEDED ;
 
     DeferredProcessingRequired = 0 ;
@@ -1504,7 +1531,7 @@ SV_STATUS LocoNetSystemVariableClass::doDeferredProcessing( void )
 
   return SV_OK ;
 }
-
+*/
  /*****************************************************************************
  *	DESCRIPTION
  *	This module provides functions that manage the LNCV-specifiv programming protocol
@@ -1663,7 +1690,7 @@ uint8_t LocoNetCVClass::processLNCVMessage(lnMsg * LnPacket) {
 								DEBUG(LnPacket->ub.payload.data.lncvValue);
 								DEBUG("\n");
 								makeLNCVresponse(response.ub, LnPacket->ub.SRC, LnPacket->ub.payload.data.deviceClass, 0x00, LnPacket->ub.payload.data.lncvValue, 0x80);
-								_delay_ms(10); // for whatever reason, we need to delay, otherwise the message will not be sent.
+								//delay_ms(10); // for whatever reason, we need to delay, otherwise the message will not be sent.
 								#ifdef DEBUG_OUTPUT
 								printPacket((lnMsg*)&response);
 								#endif
