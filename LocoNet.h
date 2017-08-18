@@ -123,6 +123,8 @@ class LocoNetClass
     LocoNetClass();
     void        init(void);
     void        init(uint8_t txPin);
+    boolean 		available(void);
+    uint8_t			length(void);
     lnMsg*      receive(void);
     LN_STATUS   send(lnMsg *TxPacket);
     LN_STATUS   send(lnMsg *TxPacket, uint8_t PrioDelay);
@@ -154,6 +156,7 @@ typedef enum
   TH_ST_SLOT_MOVE,
   TH_ST_SLOT_FREE,
   TH_ST_SLOT_RESUME,
+  TH_ST_SLOT_STEAL,
   TH_ST_IN_USE
 } TH_STATE ;
 
@@ -201,6 +204,7 @@ class LocoNetThrottleClass
 
 	uint16_t getAddress(void) ;
 	TH_ERROR setAddress(uint16_t Address) ;
+	TH_ERROR stealAddress(uint16_t Address) ;
 	TH_ERROR resumeAddress(uint16_t Address, uint8_t LastSlot) ;
 	TH_ERROR dispatchAddress(uint16_t Address) ;
 	TH_ERROR acquireAddress(void) ;
@@ -482,7 +486,7 @@ extern void notifySensor( uint16_t Address, uint8_t State ) __attribute__ ((weak
 // state: Value 0 for no input, anything else for activated
 // Sensor: Value 0 for 'Aux'/'thrown' anything else for 'switch'/'closed'
 extern void notifySwitchRequest( uint16_t Address, uint8_t Output, uint8_t Direction ) __attribute__ ((weak));
-extern void notifySwitchReport( uint16_t Address, uint8_t State, uint8_t Sensor ) __attribute__ ((weak));
+extern void notifySwitchReport( uint16_t Address, uint8_t Output, uint8_t Direction ) __attribute__ ((weak));
 extern void notifySwitchOutputsReport( uint16_t Address, uint8_t ClosedOutput, uint8_t ThrownOutput ) __attribute__ ((weak));
 extern void notifySwitchState( uint16_t Address, uint8_t Output, uint8_t Direction ) __attribute__ ((weak));
 extern void notifyPower( uint8_t State ) __attribute__ ((weak));
